@@ -15,7 +15,9 @@ const {
 const {
   validateRequestSchema,
 } = require("../validators/validateRequestSchema");
-const checkUserAssociatedWithProject = require("../middleware/project.middleware");
+const {
+  projectUserRoleMiddleware,
+} = require("../middleware/project.middleware");
 
 const router = express.Router({ mergeParams: true });
 
@@ -25,29 +27,37 @@ router
     authMiddleware,
     createNewTaskValidator,
     validateRequestSchema,
-    checkUserAssociatedWithProject,
+    projectUserRoleMiddleware(["admin", "member"]),
     createNewTask
   )
   .get(
     authMiddleware,
     validateTaskFilterQueries,
     validateRequestSchema,
-    checkUserAssociatedWithProject,
+    projectUserRoleMiddleware(["admin", "member", "viewer"]),
     fetchAllTask
   );
 
 router
   .route("/assigned-to-me")
-  .get(authMiddleware, checkUserAssociatedWithProject, getAllMyTasks);
+  .get(
+    authMiddleware,
+    projectUserRoleMiddleware(["admin", "member", "viewer"]),
+    getAllMyTasks
+  );
 router
   .route("/:taskId")
   .put(
     authMiddleware,
     updateTaskDetailsValidator,
     validateRequestSchema,
-    checkUserAssociatedWithProject,
+    projectUserRoleMiddleware(["admin", "member"]),
     updateTaskDetails
   )
-  .get(authMiddleware, checkUserAssociatedWithProject, getTaskDetails);
+  .get(
+    authMiddleware,
+    projectUserRoleMiddleware(["admin", "member", "viewer"]),
+    getTaskDetails
+  );
 
 module.exports = router;

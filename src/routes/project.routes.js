@@ -6,19 +6,39 @@ const {
   invitePeopleToProject,
   getProjectDetails,
 } = require("../controllers/project.controller");
-const checkUserAssociatedWithProject = require("../middleware/project.middleware");
+const {
+  projectUserRoleMiddleware,
+} = require("../middleware/project.middleware");
+const {
+  createProjectValidator,
+  inviteProjectMemberValidator,
+} = require("../validators/project.validator");
+const {
+  validateRequestSchema,
+} = require("../validators/validateRequestSchema");
 
 const router = express.Router();
 
 router
   .route("/")
-  .post(authMiddleware, createNewProject)
+  .post(
+    authMiddleware,
+    createProjectValidator,
+    validateRequestSchema,
+    createNewProject
+  )
   .get(authMiddleware, getAllProjectList);
 
 router.route("/:projectId").get(authMiddleware, getProjectDetails);
 
 router
   .route("/invite/:projectId")
-  .post(authMiddleware, checkUserAssociatedWithProject, invitePeopleToProject);
+  .post(
+    authMiddleware,
+    inviteProjectMemberValidator,
+    validateRequestSchema,
+    projectUserRoleMiddleware(["admin", "member"]),
+    invitePeopleToProject
+  );
 
 module.exports = router;
