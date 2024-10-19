@@ -5,6 +5,7 @@ const errorCodes = require("./src/utils/error-codes");
 const userRoutes = require("./src/routes/user.routes");
 const taskRoutes = require("./src/routes/task.routes");
 const projectRoutes = require("./src/routes/project.routes");
+const commentRoutes = require("./src/routes/comment.routes");
 require("./src/models/comment.model");
 const {
   ValidationError,
@@ -23,12 +24,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/users", userRoutes);
-// app.use("/api/project/:projectId/tasks", (req,res, next)=>{
-//     console.log(req.params,"params")
-//     next()
-// });
-app.use("/api/project/:projectId/tasks",taskRoutes);
+app.use("/api/project/:projectId/tasks", taskRoutes);
 app.use("/api/project", projectRoutes);
+app.use("/api/project/:projectId/tasks/:taskId/comments", commentRoutes);
 
 app.use((err, req, res, next) => {
   if (err instanceof ValidationError) {

@@ -11,6 +11,7 @@ const commentModel = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      immutable: true
     },
     replies: [
       {
@@ -18,6 +19,12 @@ const commentModel = mongoose.Schema(
         ref: "Comment",
       },
     ],
+    task: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Task",
+      immutable: true,
+      required: true
+    },
   },
   {
     timestamps: true,

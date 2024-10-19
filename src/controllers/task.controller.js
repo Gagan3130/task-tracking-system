@@ -2,7 +2,6 @@ const asyncHandler = require("express-async-handler");
 const { TaskServices } = require("../services/task.service");
 const { NotFoundError } = require("../utils/custom-error");
 const errorCodes = require("../utils/error-codes");
-const Project = require("../models/project.model");
 
 const createNewTask = asyncHandler(async (req, res) => {
   const { title, description, dueDate, priority } = req.body;
