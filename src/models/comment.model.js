@@ -11,7 +11,7 @@ const commentModel = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      immutable: true
+      immutable: true,
     },
     replies: [
       {
@@ -23,13 +23,18 @@ const commentModel = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Task",
       immutable: true,
-      required: true
+      required: true,
     },
   },
   {
     timestamps: true,
   }
 );
+
+commentModel.pre("find", function (next) {
+  this.populate({ path: "replies", populate: { path: "commentedBy" } });
+  next();
+});
 
 commentModel.virtual("id").get(function () {
   return this._id;

@@ -3,6 +3,7 @@ const Comment = require("../models/comment.model");
 const Task = require("../models/task.model");
 const { NotFoundError } = require("../utils/custom-error");
 const errorCodes = require("../utils/error-codes");
+const { populateRepliesRecursively } = require("../utils");
 
 const postComment = expressAsyncHandler(async (req, res) => {
   const { content } = req.body;
@@ -51,16 +52,11 @@ const postCommentReply = expressAsyncHandler(async (req, res) => {
 
 const getAllTaskComments = expressAsyncHandler(async (req, res) => {
   const { taskId } = req.params;
-  const tasks = await Task.findById(taskId).populate({
-    path: "comments",
-    populate: {
-      path: "replies",
-    },
-    populate: {
-      path: "commentedBy",
-    },
-  });
-  res.status(200).json(tasks.comments);
+  let task = await Task.findById(taskId).populate("comments");
+  for (let comment of task.comments) {
+    await populateRepliesRecursively(comment);
+  }
+  res.status(200).json(task.comments);
 });
 
 module.exports = { postComment, postCommentReply, getAllTaskComments };
