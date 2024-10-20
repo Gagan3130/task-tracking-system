@@ -39,6 +39,7 @@ const postCommentReply = expressAsyncHandler(async (req, res) => {
     content: content,
     commentedBy: req.user.id,
     task: taskId,
+    parentComment: commentId,
   });
   const comm = await Comment.findByIdAndUpdate(
     commentId,
@@ -59,4 +60,36 @@ const getAllTaskComments = expressAsyncHandler(async (req, res) => {
   res.status(200).json(task.comments);
 });
 
-module.exports = { postComment, postCommentReply, getAllTaskComments };
+const removeComment = expressAsyncHandler(async (req, res) => {
+  const { commentId, taskId } = req.params;
+  const comment = await Comment.findById(commentId);
+  if (!comment) {
+    throw new NotFoundError({
+      code: errorCodes.COMMENT_NOT_FOUND,
+      message: `Comment with comment id ${commentId} does not exist`,
+    });
+  }
+  if (comment.task.toString() !== taskId) {
+    throw new NotFoundError({
+      code: errorCodes.COMMENT_NOT_FOUND,
+      message: "commentId is not associated with the task",
+    });
+  }
+  if (comment.parentComment) {
+    const parentComment = await Comment.findById(comment.parentComment);
+    const replies = parentComment.replies.filter((id) => id.toString() !== comment.id);
+    await Comment.findByIdAndUpdate(comment.parentComment, { replies });
+  } else {
+    const task = await Task.findById(taskId);
+    const taskComments = task.comments.filter((id) => id.toString() !== comment.id);
+    await Task.findByIdAndUpdate(taskId, { comments: taskComments });
+  }
+  res.status(200).json({ msg: "Comment deleted successfully" });
+});
+
+module.exports = {
+  postComment,
+  postCommentReply,
+  getAllTaskComments,
+  removeComment,
+};

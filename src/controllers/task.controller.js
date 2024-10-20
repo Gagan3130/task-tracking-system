@@ -5,7 +5,7 @@ const errorCodes = require("../utils/error-codes");
 
 const createNewTask = asyncHandler(async (req, res) => {
   const { title, description, dueDate, priority } = req.body;
-  const {projectId} = req.params
+  const { projectId } = req.params;
   const task = await TaskServices.createTask({
     title,
     description,
@@ -19,13 +19,16 @@ const createNewTask = asyncHandler(async (req, res) => {
 
 const getAllMyTasks = asyncHandler(async (req, res) => {
   const { id } = req.user;
-  const {projectId} = req.params
+  const { projectId } = req.params;
   const tasks = await TaskServices.retriveTaskAssignedToMe(id, projectId);
   res.status(200).json(tasks);
 });
 
 const updateTaskDetails = asyncHandler(async (req, res) => {
   const { taskId, projectId } = req.params;
+  const { title, description, dueDate, priority, status, assignedTo, attachments } =
+    req.body;
+    console.log(attachments,"attachments", req.body)
   const task = await TaskServices.findTask(taskId);
   if (!task) {
     throw new NotFoundError({
@@ -39,7 +42,14 @@ const updateTaskDetails = asyncHandler(async (req, res) => {
       message: "Task not found",
     });
   }
-  const response = await TaskServices.updateTaskDetails(taskId, req.body);
+  const response = await TaskServices.updateTaskDetails(taskId, {
+    title,
+    description,
+    dueDate,
+    priority,
+    status,
+    assignedTo,
+  });
   if (response) res.status(200).json({ message: "task updated successfully" });
 });
 
@@ -58,7 +68,7 @@ const getTaskDetails = asyncHandler(async (req, res) => {
       message: "Task not found",
     });
   }
-  const taskDetails = await TaskServices.fetchTaskDetails(taskId)
+  const taskDetails = await TaskServices.fetchTaskDetails(taskId);
   res.status(200).json(taskDetails);
 });
 
@@ -69,7 +79,7 @@ const fetchAllTask = asyncHandler(async (req, res) => {
     status,
     search,
     sortBy,
-    projectId
+    projectId,
   });
   res.status(200).json(tasks);
 });

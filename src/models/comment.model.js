@@ -13,6 +13,11 @@ const commentModel = mongoose.Schema(
       required: true,
       immutable: true,
     },
+    parentComment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+      default: null
+    },
     replies: [
       {
         type: mongoose.Schema.Types.ObjectId,

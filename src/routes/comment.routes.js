@@ -8,6 +8,7 @@ const {
   postComment,
   postCommentReply,
   getAllTaskComments,
+  removeComment,
 } = require("../controllers/comment.controller");
 
 const router = express.Router({ mergeParams: true });
@@ -34,6 +35,14 @@ router
     projectUserRoleMiddleware(["admin", "member", "viewer"]),
     checkTaskMiddleware,
     postCommentReply
+  );
+  router
+  .route("/:commentId/remove-comment")
+  .post(
+    authMiddleware,
+    projectUserRoleMiddleware(["admin", "member", "viewer"]),
+    checkTaskMiddleware,
+    removeComment
   );
 
 module.exports = router;
