@@ -17,10 +17,10 @@ const projectUserRoleMiddleware = (roles) => {
       });
     }
     const userMember = project.members.find(
-      // check the user that is requesting for a resource is member of that project or have the valid role for that resource
+      // check the user that is requesting for a resource is member of that project
       (member) => member.user.toString() === id
     );
-    if (!userMember || !roles.includes(userMember.role)) {
+    if (!userMember || !roles.includes(userMember.role)) { //user have the valid role for that resource
       throw new UnAuthorisedError({
         code: errorCodes.ACCESS_DENIED,
         message: "Access denied",

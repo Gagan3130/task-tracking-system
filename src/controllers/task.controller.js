@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const { TaskServices } = require("../services/task.service");
 const { NotFoundError } = require("../utils/custom-error");
 const errorCodes = require("../utils/error-codes");
+const { notifyUser } = require("../utils");
 
 const createNewTask = asyncHandler(async (req, res) => {
   const { title, description, dueDate, priority } = req.body;
@@ -26,10 +27,19 @@ const getAllMyTasks = asyncHandler(async (req, res) => {
 
 const updateTaskDetails = asyncHandler(async (req, res) => {
   const { taskId, projectId } = req.params;
-  const { title, description, dueDate, priority, status, assignedTo, attachments } =
-    req.body;
-    console.log(attachments,"attachments", req.body)
+  const {
+    title,
+    description,
+    dueDate,
+    priority,
+    status,
+    assignedTo,
+    attachments,
+  } = req.body;
   const task = await TaskServices.findTask(taskId);
+  let users = [task.assignedTo];
+  if (assignedTo) users.push(assignedTo);
+  users = [...new Set(users)];
   if (!task) {
     throw new NotFoundError({
       code: errorCodes.TASK_NOT_FOUND,
@@ -50,6 +60,9 @@ const updateTaskDetails = asyncHandler(async (req, res) => {
     status,
     assignedTo,
   });
+  for (const userId of users) {
+    notifyUser(userId, "Task informations have been changed");
+  }
   if (response) res.status(200).json({ message: "task updated successfully" });
 });
 

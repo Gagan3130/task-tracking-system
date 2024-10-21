@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const appSocket = require("../../socket")
 
 const generateJwtToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_SECRET_KEY, {
@@ -28,4 +29,14 @@ const populateRepliesRecursively = async (comment) => {
   }
 };
 
-module.exports = { generateJwtToken, decodeJwtToken, populateRepliesRecursively };
+const notifyUser = (userId, message) => {
+    const io = appSocket.io
+    const socketId = appSocket.users[userId]
+    if(socketId){
+        io.to(socketId).emit("notify", message)
+    }
+    else console.log(`user ${userId} is not connected`)
+    
+}
+
+module.exports = { generateJwtToken, decodeJwtToken, populateRepliesRecursively, notifyUser };
