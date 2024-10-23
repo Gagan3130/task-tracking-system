@@ -26,6 +26,7 @@ const projectUserRoleMiddleware = (roles) => {
         message: "Access denied",
       });
     }
+    req.project = project
     next();
   });
 };

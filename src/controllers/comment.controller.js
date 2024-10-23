@@ -1,20 +1,15 @@
 const expressAsyncHandler = require("express-async-handler");
-const Comment = require("../models/comment.model");
-const Task = require("../models/task.model");
 const { NotFoundError } = require("../utils/custom-error");
 const errorCodes = require("../utils/error-codes");
-const { populateRepliesRecursively } = require("../utils");
+const { CommentService } = require("../services/comment.service");
 
 const postComment = expressAsyncHandler(async (req, res) => {
   const { content } = req.body;
   const { taskId } = req.params;
-  const comment = await Comment.create({
-    content: content,
-    commentedBy: req.user.id,
-    task: taskId,
-  });
-  await Task.findByIdAndUpdate(taskId, {
-    $push: { comments: comment.id },
+  const comment = await CommentService.postNewComment({
+    content,
+    userId: req.user.id,
+    taskId,
   });
   res.status(201).json(comment);
 });
@@ -22,7 +17,7 @@ const postComment = expressAsyncHandler(async (req, res) => {
 const postCommentReply = expressAsyncHandler(async (req, res) => {
   const { commentId, taskId } = req.params;
   const { content } = req.body;
-  const comment = await Comment.findById(commentId);
+  const comment = await CommentService.findComment(commentId);
   if (!comment) {
     throw new NotFoundError({
       code: errorCodes.COMMENT_NOT_FOUND,
@@ -35,34 +30,24 @@ const postCommentReply = expressAsyncHandler(async (req, res) => {
       message: "commentId is not associated with the task",
     });
   }
-  const repliedComment = await Comment.create({
-    content: content,
+  const repliedComment = await CommentService.postCommentReply({
     commentedBy: req.user.id,
-    task: taskId,
+    taskId,
+    content,
     parentComment: commentId,
   });
-  const comm = await Comment.findByIdAndUpdate(
-    commentId,
-    {
-      $push: { replies: repliedComment.id },
-    },
-    { new: true }
-  );
-  res.status(201).json(comm);
+  res.status(201).json(repliedComment);
 });
 
 const getAllTaskComments = expressAsyncHandler(async (req, res) => {
   const { taskId } = req.params;
-  let task = await Task.findById(taskId).populate("comments");
-  for (let comment of task.comments) {
-    await populateRepliesRecursively(comment);
-  }
-  res.status(200).json(task.comments);
+  const comments = await CommentService.getAllTaskComments(taskId);
+  res.status(200).json(comments);
 });
 
 const removeComment = expressAsyncHandler(async (req, res) => {
   const { commentId, taskId } = req.params;
-  const comment = await Comment.findById(commentId);
+  const comment = await CommentService.findComment(commentId);
   if (!comment) {
     throw new NotFoundError({
       code: errorCodes.COMMENT_NOT_FOUND,
@@ -75,15 +60,7 @@ const removeComment = expressAsyncHandler(async (req, res) => {
       message: "commentId is not associated with the task",
     });
   }
-  if (comment.parentComment) {
-    const parentComment = await Comment.findById(comment.parentComment);
-    const replies = parentComment.replies.filter((id) => id.toString() !== comment.id);
-    await Comment.findByIdAndUpdate(comment.parentComment, { replies });
-  } else {
-    const task = await Task.findById(taskId);
-    const taskComments = task.comments.filter((id) => id.toString() !== comment.id);
-    await Task.findByIdAndUpdate(taskId, { comments: taskComments });
-  }
+  await CommentService.removeComment(comment);
   res.status(200).json({ msg: "Comment deleted successfully" });
 });
 

@@ -29,7 +29,13 @@ router
   )
   .get(authMiddleware, getAllProjectList);
 
-router.route("/:projectId").get(authMiddleware, getProjectDetails);
+router
+  .route("/:projectId")
+  .get(
+    authMiddleware,
+    projectUserRoleMiddleware(["admin", "member", "viewer"]),
+    getProjectDetails
+  );
 
 router
   .route("/invite/:projectId")

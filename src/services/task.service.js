@@ -8,7 +8,7 @@ class TaskService {
       dueDate,
       priority,
       createdBy: userId,
-      project
+      project,
     });
     return task;
   }
@@ -39,7 +39,7 @@ class TaskService {
     return await Task.findById(taskId)
       .populate("assignedTo", "name email id")
       .populate("createdBy", "name email id")
-      .populate("project","projectName")
+      .populate("project", "projectName")
       .populate({
         path: "comments",
         populate: {
@@ -66,6 +66,12 @@ class TaskService {
       priority,
       status,
       assignedTo,
+    });
+  }
+
+  async addCommentsToTask({ taskId, commentId }) {
+    await Task.findByIdAndUpdate(taskId, {
+      $push: { comments: commentId },
     });
   }
 }
