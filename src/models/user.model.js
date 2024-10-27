@@ -39,9 +39,7 @@ userModel.methods.comparePassword = async function (enteredPassword) {
 //pre and post save hook does not work for update queries
 // https://mongoosejs.com/docs/middleware.html#pre
 userModel.pre("save", function (next) {
-  console.log("save start");
   var user = this;
-  console.log(user.isModified("password"), "modified?", user.password);
   // only hash the password if it has been modified (or is new)
   if (!user.isModified("password")) return next();
 

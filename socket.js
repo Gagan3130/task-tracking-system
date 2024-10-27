@@ -4,7 +4,6 @@ const http = require("http");
 
 class Socket {
   constructor() {
-    console.log("constructor initialised");
     this.app = express();
     this.server = http.createServer(this.app);
     this.io = socketIo(this.server);
