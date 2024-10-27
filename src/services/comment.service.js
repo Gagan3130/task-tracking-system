@@ -44,7 +44,7 @@ class CommentServices {
 
   async removeComment({comment, taskId}){
     if (comment.parentComment) {
-        const parentComment = await CommentService.findComment(comment.parentComment)
+        const parentComment = await this.findComment(comment.parentComment)
         const replies = parentComment.replies.filter(
           (id) => id.toString() !== comment.id
         );
