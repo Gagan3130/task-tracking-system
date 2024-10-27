@@ -61,7 +61,7 @@ const updateTaskDetails = asyncHandler(async (req, res) => {
     assignedTo,
   });
   for (const userId of users) {
-    notifyUser(userId, "Task informations have been changed");
+    TaskServices.sendNotificationToUser(userId);
   }
   if (response) res.status(200).json({ message: "task updated successfully" });
 });

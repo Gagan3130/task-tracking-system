@@ -1,4 +1,5 @@
 const Task = require("../models/task.model");
+const { notifyUser } = require("../utils");
 
 class TaskService {
   async createTask({ title, description, dueDate, priority, userId, project }) {
@@ -73,6 +74,10 @@ class TaskService {
     await Task.findByIdAndUpdate(taskId, {
       $push: { comments: commentId },
     });
+  }
+
+  sendNotificationToUser(userId) {
+    notifyUser(userId, "Task informations have been changed");
   }
 }
 
